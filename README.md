@@ -1,5 +1,4 @@
-# Arduino-VGA
-Displays simple 6-bit VGA output using an Arduino Mega 2560.
-
-### Image Converter
-I wrote a small python script `imageConverter.py` that will take an image and turn it into a byte array that can be used with the program. It doesn't take care of resizing or color dithering, so I recommend using a program like GIMP to take care of that. The `image.h` file contains some example images that can be included in the program by using `#define IMAGE_[NAME]` and then `#include 'image.h'`, and then the code at the top of `setup()` will copy that image from progmem into the framebuffer for display.
+# Arduventure
+A game that plays on an Arduino Mega 2560 using no external libraries other than the standard AVR/Arduino ones.
+Using my [Arduino-VGA](https://github.com/byteduck/Arduino-VGA) code, I decided to make a little Atari 2600 "Adventure" -esque game.
+Check [Arduventure.ino](Arduventure.ino) and [Arduventure.h](Arduventure.h) for which pins to hook everything to.

@@ -1,69 +1,23 @@
 /**
- * This code generates a simple VGA signal that shows red, green, and blue bars across the screen.
+ * Byteduck 2020
  * 
- * A VGA signal is relatively simple. I'm only using 6 pins: ground, vsync, hsync, red, green, blue.
- * VGA draws the picture from top to bottom, left to right. I'm using a standard 640x480 resolution.
- * The monitor draws 480 vertical lines, each of which take about 32us.
- * The signal also contains 32 additional blank lines called the vertical blanking interval at the beginning.
- * 
- * The vsync pin is used to send a pulse every time a new frame should start.
- * The standard is 60hz, so it is set to pulse for 64us every 1/60th of a second.
- * This along with the vertical blanking interval helps the monitor know where the picture should start.
- * 
- * The hsync pin is used to send a pulse every time a new line should start.
- * Since we have 480 lines for 480 vertical pixels, we pulse once every line (32us).
- * 
- * The red, green, and blue pins are used to control the color the monitor draws.
- * Their voltage corresponds to the color intensity of whatever pixel we happen to be drawing.
- * As the monitor scans from left to right during a line, it reads the analog RGB values and draws them on the screen.
- * 
- * I used this wikipedia page to gather all of this info: https://en.wikipedia.org/wiki/Video_Graphics_Array
+ * This is a simple "Adventure" (1979) - like game for the Arduino Mega 2560.
+ * It uses no libraries for VGA output.
+ * Check Arduventure.h for pin mappings for the display output.
+ * For each color, PIN1 and PIN2 are hooked up with resistors such that PIN1 will be darker, PIN2 will be brighter, and both will be the full color.
+ * The "controller" is hooked up to pins 37-34 (UP, DOWN, LEFT, RIGHT).
  */
- 
-#include <avr/sleep.h>
 
-//Macro for converting define to string
-#define _STR(X) #X
-#define STR(X) _STR(X)
-
-#include <avr/sleep.h>
-
-//Macro for converting define to string
-#define _STR(X) #X
-#define STR(X) _STR(X)
-
-#define VSYNC_PIN 11
-#define HSYNC_PIN 9
-#define RED_PIN1 24
-#define RED_PIN2 25
-#define GREEN_PIN1 26
-#define GREEN_PIN2 27
-#define BLUE_PIN1 28
-#define BLUE_PIN2 29
-#define DISPLAY_PIN 4
-
-#define VERTICAL_SKIP 90 //Vertical lines to skip during blanking interval
-
-#define RES_WIDTH 640
-#define RES_HEIGHT 480
-
-//How many pixels wide the display buffer is
-#define PIXELS_WIDTH 120
-//How many pixels high the display buffer is
-#define PIXELS_HEIGHT 60
+#include "Arduventure.h"
+#include "game.h"
 
 //6-bit color (2 bits per R/G/B). This takes up almost all of the dynamic memory on
 //the Arduino Mega 2560 with a 120x60 framebuffer. In BGR format: 0bBBGGRR__
 byte displayBuffer[PIXELS_WIDTH * PIXELS_HEIGHT]; 
 
-//This stores the image we're going to display.
-#define IMAGE_MONA6
-#include "image.h"
-
 int blankLinesLeft; //How many lines are left in the blanking interval
 byte line; //What line we're drawing in the framebuffer (NOT THE ACTUAL SCREEN LINE)
 byte sLine; //What subline we're on
-#define SUBLINES_PER_LINE 6
 
 void setup() {
   //Setup pins
@@ -76,19 +30,11 @@ void setup() {
   pinMode(BLUE_PIN1, OUTPUT);
   pinMode(BLUE_PIN2, OUTPUT);
 
-  //Copy the image (tiled) into the display buffer
-  for(int y = 0; y < PIXELS_HEIGHT; y++){
-    for(int x = 0; x < PIXELS_WIDTH; x++) {
-      displayBuffer[x + y * PIXELS_WIDTH] = pgm_read_byte_near(IMAGE + (x % IMAGE_WIDTH) + ((y % IMAGE_HEIGHT) * IMAGE_WIDTH));
-    }
+  //Set up controller pins
+  for(int i = 30; i < 37; i++){
+    pinMode(i, INPUT);
   }
 
-  //Copy the image (tiled) into the display buffer
-  for(int y = 0; y < PIXELS_HEIGHT; y++){
-    for(int x = 0; x < PIXELS_WIDTH; x++) {
-      displayBuffer[x + y * PIXELS_WIDTH] = pgm_read_byte_near(IMAGE + (x % IMAGE_WIDTH) + ((y % IMAGE_HEIGHT) * IMAGE_WIDTH));
-    }
-  }
 
   cli(); //Clear interrupts
 
@@ -134,6 +80,8 @@ void setup() {
 
   sei(); //Set interrupts
   set_sleep_mode (SLEEP_MODE_IDLE); //Processor should sleep in between interrupts so timing is right
+
+  initGame();
 }
 
 void loop() {
@@ -150,6 +98,8 @@ ISR (TIMER1_OVF_vect) {
   //Set line to 0 since we're back at the first line
   sLine = -1;
   line = 0;
+
+  gameTick();
 }
 
 //Horizontal sync interrupt. Called every time a new line starts.
@@ -195,10 +145,4 @@ ISR (TIMER2_OVF_vect) {
       line++;
     }
   }
-}
-
-// Convenient method to set a pixel at an x and y position in the display buffer.
-// Inlined so that the code is actually copied to where it is called instead of calling the function for performance
-inline void setPixel(byte x, byte y, byte color) {
-  displayBuffer[x + y * PIXELS_WIDTH] = color;
 }

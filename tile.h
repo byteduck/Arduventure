@@ -1,0 +1,157 @@
+#ifndef TILE_H
+#define TILE_H
+
+#include <Arduino.h>
+
+//Once the tile is loaded in, the data is stored here
+struct Tile {
+  byte sprite[8];
+  boolean passable : 1;
+};
+
+
+const Tile PROGMEM TILE_BLANK = {
+  .sprite = {},
+  .passable = true
+};
+
+const Tile PROGMEM TILE_BLOCK = {
+  .sprite = {
+    0x33, 0x33,
+    0x33, 0x33,
+    0x33, 0x33,
+    0x33, 0x33
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK = {
+  .sprite = {
+    0x55, 0x55,
+    0x54, 0x35,
+    0x53, 0x45,
+    0x55, 0x55
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_V = {
+  .sprite = {
+    0x53, 0x45,
+    0x54, 0x35,
+    0x53, 0x45,
+    0x54, 0x35
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_B = {
+  .sprite = {
+    0x53, 0x45,
+    0x54, 0x35,
+    0x53, 0x45,
+    0x55, 0x55
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_T = {
+  .sprite = {
+    0x55, 0x55,
+    0x54, 0x35,
+    0x53, 0x45,
+    0x54, 0x35
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_H = {
+  .sprite = {
+    0x55, 0x55,
+    0x34, 0x34,
+    0x43, 0x43,
+    0x55, 0x55
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_C = {
+  .sprite = {
+    0x43, 0x43,
+    0x34, 0x34,
+    0x43, 0x43,
+    0x34, 0x34
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_TL = {
+  .sprite = {
+    0x55, 0x55,
+    0x54, 0x34,
+    0x53, 0x43,
+    0x54, 0x34
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_L = {
+  .sprite = {
+    0x53, 0x43,
+    0x54, 0x34,
+    0x53, 0x43,
+    0x54, 0x34
+  },
+};
+
+const Tile PROGMEM TILE_BRICK_BL = {
+  .sprite = {
+    0x53, 0x43,
+    0x54, 0x34,
+    0x53, 0x43,
+    0x55, 0x55
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_TR = {
+  .sprite = {
+    0x55, 0x55,
+    0x34, 0x35,
+    0x43, 0x45,
+    0x34, 0x35
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_R = {
+  .sprite = {
+    0x43, 0x45,
+    0x34, 0x35,
+    0x43, 0x45,
+    0x34, 0x35
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_BRICK_BR = {
+  .sprite = {
+    0x43, 0x45,
+    0x34, 0x35,
+    0x43, 0x45,
+    0x55, 0x55
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_LOCKEDGATE = {
+  .sprite = {
+    0x10, 0x10,
+    0x01, 0x01,
+    0x10, 0x10,
+    0x01, 0x01
+  },
+  .passable = false
+};
+
+#endif
