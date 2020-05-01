@@ -1,9 +1,13 @@
 #include "game.h"
 
 byte controller;
-SpriteObject player;
-byte *heartSprite;
-byte *keySprite;
+SpriteObject player = {
+  .sprite = PLAYER,
+  .x = 58,
+  .y = 28,
+  .width = 4,
+  .height = 4
+};
 SpriteObject objects[NUM_OBJECTS];
 Room room;
 Data data = {
@@ -15,16 +19,6 @@ Data data = {
 
 //Called in setup()
 void initGame() {
-  byte* playerSprite = loadSprite(PLAYER, 4, 4);
-  player.sprite = playerSprite;
-  player.x = 58;
-  player.y = 28;
-  player.width = 4;
-  player.height = 4;
-
-  heartSprite = loadSprite(HEART, 4, 4);
-  keySprite = loadSprite(KEY, 8, 4);
-
   loadRoom(&ROOM_START);
 }
 
@@ -87,10 +81,10 @@ void gameTick() {
 
   //Draw bottom info bar
   for(byte i = 0; i < data.health; i++) {
-    drawSprite(heartSprite, 4, 4, INFO_PALETTE, i*6 + 2, PIXELS_HEIGHT - 6);
+    drawSprite(HEART, 4, 4, INFO_PALETTE, i*6 + 2, PIXELS_HEIGHT - 6);
   }
   if(data.hasKey) {
-    drawSprite(keySprite, 8, 4, INFO_PALETTE, PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6);
+    drawSprite(KEY, 8, 4, INFO_PALETTE, PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6);
   } else {
     fillArea(PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6, 8, 4, BLACK);
   }

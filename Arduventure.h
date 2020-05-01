@@ -1,5 +1,5 @@
-#ifndef VGA_H
-#define VGA_H
+#ifndef ARDUVENTURE_H
+#define ARDUVENTURE_H
 
 #include <avr/sleep.h>
 

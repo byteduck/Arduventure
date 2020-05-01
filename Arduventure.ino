@@ -10,6 +10,7 @@
 
 #include "Arduventure.h"
 #include "game.h"
+const char pad[500] PROGMEM = { 0 };
 
 //6-bit color (2 bits per R/G/B). This takes up almost all of the dynamic memory on
 //the Arduino Mega 2560 with a 120x60 framebuffer. In BGR format: 0bBBGGRR__
@@ -20,6 +21,7 @@ byte line; //What line we're drawing in the framebuffer (NOT THE ACTUAL SCREEN L
 byte sLine; //What subline we're on
 
 void setup() {
+  pad[0];
   //Setup pins
   pinMode(VSYNC_PIN, OUTPUT);
   pinMode(HSYNC_PIN, OUTPUT);
@@ -84,26 +86,7 @@ void setup() {
   initGame();
 }
 
-void loop() {
-  // Wait for interrupt. Without this, the display shakes because the CPU is still working when the interrupt
-  // happens so the delay to switch from the running code to the interrupt code varies by a few microseconds
-  // this also means that I can't do anything in loop, so I'll have to find a workaround to the shaking
-  sleep_mode();
-}
-
-//Vertical sync interrupt. Called every time a new frame starts.
-ISR (TIMER1_OVF_vect) {
-  //Set blankLinesLeft to VERTICAL_SKIP because we need to not draw anything during veritcal blanking
-  blankLinesLeft = VERTICAL_SKIP;
-  //Set line to 0 since we're back at the first line
-  sLine = -1;
-  line = 0;
-
-  gameTick();
-}
-
-//Horizontal sync interrupt. Called every time a new line starts.
-ISR (TIMER2_OVF_vect) {
+void scanLine(){
   //If we're still in the vertical blanking interval, do nothing
   if(blankLinesLeft) {
     blankLinesLeft--;
@@ -145,4 +128,25 @@ ISR (TIMER2_OVF_vect) {
       line++;
     }
   }
+}
+
+void loop() {
+  // Wait for interrupt. This way the CPU starts drawing the scanline at the same time every time
+  sleep_mode();
+  scanLine();
+}
+
+//Vertical sync interrupt. Called every time a new frame starts.
+ISR (TIMER1_OVF_vect) {
+  //Set blankLinesLeft to VERTICAL_SKIP because we need to not draw anything during veritcal blanking
+  blankLinesLeft = VERTICAL_SKIP;
+  //Set line to 0 since we're back at the first line
+  sLine = -1;
+  line = 0;
+  gameTick();
+}
+
+//Horizontal sync interrupt. Called every time a new line starts.
+ISR (TIMER2_OVF_vect) {
+
 }

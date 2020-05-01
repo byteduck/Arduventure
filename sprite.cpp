@@ -1,18 +1,5 @@
 #include "sprite.h"
 
-//Load a sprite from PROGMEM into memory. Sprite's width must be multiple of 2.
-byte* loadSprite(const byte* PROGMEM sprite, byte width, byte height) {
-  size_t spriteSize = (width/2)*height;
-  byte* spriteMem = malloc(spriteSize);
-  memcpy_P(spriteMem, sprite, spriteSize);
-  return spriteMem;
-}
-
-//Unload a sprite from memory.
-byte* unloadSprite(byte *spriteMem) {
-  free(spriteMem);
-}
-
 //Sprite's width must be a multiple of 4.
 //If the rightmost bit in a palette color is set, it's transparent
 void drawSprite(const byte *sprite, byte spriteWidth, byte spriteHeight, const byte* palette, int x, int y) {

@@ -14,8 +14,6 @@ struct SpriteObject {
   byte  height : 4;
 };
 
-byte* loadSprite(const byte* PROGMEM sprite, byte width, byte height);
-byte* unloadSprite(byte *spriteMem);
 void drawSprite(const byte *sprite, byte spriteWidth, byte spriteHeight, const byte* palette, int x, int y);
 boolean collides(SpriteObject a, SpriteObject b);
 
@@ -30,21 +28,21 @@ inline void drawSpriteObject(SpriteObject obj, byte* palette){
   drawSprite(obj.sprite, obj.width, obj.height, palette, obj.x, obj.y);
 }
 
-const byte PROGMEM PLAYER[] = {
+const byte PLAYER[] = {
   0x0F, 0xF0,
   0xFF, 0xFF,
   0x0F, 0xF0,
   0xF0, 0x0F
 };
 
-const byte PROGMEM HEART[] = {
+const byte HEART[] = {
   0x10, 0x01,
   0x23, 0x32,
   0x12, 0x21,
   0x01, 0x10
 };
 
-const byte PROGMEM KEY[] = {
+const byte KEY[] = {
   0x00, 0x00, 0x04, 0x44,
   0x44, 0x44, 0x44, 0x04,
   0x40, 0x40, 0x04, 0x44,

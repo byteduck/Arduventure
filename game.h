@@ -26,8 +26,6 @@ extern Data data;
 
 extern byte controller;
 extern SpriteObject player;
-extern byte *heartSprite;
-extern byte *keySprite;
 extern SpriteObject objects[NUM_OBJECTS];
 extern Room room;
 

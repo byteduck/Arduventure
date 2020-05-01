@@ -67,7 +67,7 @@ const Room PROGMEM ROOM_2 = {
 void loadRoomKey1(){
   if(!data.gotKey1) {
     objects[0] = {
-      .sprite = keySprite,
+      .sprite = KEY,
       .x = 54,
       .y = 28,
       .width = 8,
