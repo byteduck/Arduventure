@@ -34,6 +34,7 @@ extern const Room PROGMEM ROOM_2;
 extern const Room PROGMEM ROOM_START;
 extern const Room PROGMEM ROOM_KEY1;
 extern const Room PROGMEM ROOM_DOOR1;
-extern const Room PROGMEM ROOM_END;
+extern const Room PROGMEM ROOM_SWORD;
+extern const Room PROGMEM ROOM_GHOSTS;
 
 #endif

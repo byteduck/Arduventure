@@ -35,8 +35,8 @@ void setup() {
     pinMode(i, INPUT);
   }
 
-
-  cli(); //Clear interrupts
+  //Clear interrupts
+  cli();
 
   //disable timer 0 because it interferes with the others that we need to be precise
   TIMSK0=0;

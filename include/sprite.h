@@ -5,17 +5,7 @@
 #include "Arduventure.h"
 #include "color.h"
 
-//A struct that holds a sprite, position, and dimensions.
-struct SpriteObject {
-  const byte* sprite;
-  byte  x;
-  byte  y;
-  byte  width : 4;
-  byte  height : 4;
-};
-
 void drawSprite(const byte *sprite, byte spriteWidth, byte spriteHeight, const byte* palette, int x, int y);
-boolean collides(SpriteObject a, SpriteObject b);
 
 //Draws pixel at [index] in displayBuffer if rightmost bit of [color] isn't set.
 //Used in drawSprite.
@@ -23,11 +13,9 @@ inline void conditionalPixelDraw(int index, byte color) {
   if(!(color & 1)) displayBuffer[index] = color;
 }
 
-//Shortcut to draw spriteObject
-inline void drawSpriteObject(SpriteObject obj, byte* palette){
-  drawSprite(obj.sprite, obj.width, obj.height, palette, obj.x, obj.y);
-}
-
+/*
+* SPRITES
+*/
 const byte PLAYER[] = {
   0x0F, 0xF0,
   0xFF, 0xFF,
@@ -49,8 +37,32 @@ const byte KEY[] = {
   0x40, 0x00, 0x00, 0x00
 };
 
-const byte INFO_PALETTE[] = {
-  TRANSPARENT, DARKRED, RED, BRIGHTRED, GOLD
+const byte SWORD[] = {
+  0x0D, 0x00, 0x00, 0x00,
+  0x5D, 0xEE, 0xEE, 0xEF,
+  0x4E, 0xFF, 0xFF, 0xF0,
+  0x0E, 0x00, 0x00, 0x00
 };
+
+const byte GHOST[] = {
+  0x00, 0x11, 0x00,
+  0x02, 0x21, 0x10,
+  0x2C, 0x21, 0xC1,
+  0x22, 0xCC, 0x11,
+  0x22, 0x21, 0x11,
+  0x20, 0x22, 0x01
+};
+
+const byte GHOST_PROJECTILE[] = {
+  0x12,
+  0x21
+};
+
+
+/*
+* PALETTES
+*/
+const byte UI_PALETTE[16] = {TRANSPARENT, DARKRED, RED, BRIGHTRED, GOLD, BROWN, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
+const byte ENEMY_PALETTE[16] = {TRANSPARENT, LIGHTPURPLE, PURPLE, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, TRANSPARENT, BLACK, DARKGRAY, LIGHTGRAY, WHITE};
 
 #endif

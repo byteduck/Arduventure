@@ -1,20 +1,19 @@
 #include "game.h"
 
 byte controller;
-SpriteObject player = {
-  .sprite = PLAYER,
+Entity player = {
+  .id = ENTITY_PLAYER,
   .x = 58,
-  .y = 28,
-  .width = 4,
-  .height = 4
+  .y = 28
 };
-SpriteObject objects[NUM_OBJECTS];
+Entity entities[NUM_ENTITIES];
 Room room;
 Data data = {
   .health = 4,
   .hasKey = false,
   .gotKey1 = false,
-  .unlockedDoor1 = false
+  .unlockedDoor1 = false,
+  .hasSword = false,
 };
 
 //Called in setup()
@@ -27,11 +26,11 @@ void gameTick() {
   //digitalRead pins 30-37 into controller
   controller = PINC;
   
-  //Fill in spriteObjects with tiles behind them
-  clearSpriteObject(player);
-  for(int i = 0; i < NUM_OBJECTS; i++) {
-    SpriteObject obj = objects[i];
-    if(obj.sprite) clearSpriteObject(obj);
+  //Fill in Entities with background behind them
+  clearEntity(&player);
+  for(int i = 0; i < NUM_ENTITIES; i++) {
+    Entity ent = entities[i];
+    if(ent.id) clearEntity(&ent);
   }
 
   //Move player according to input
@@ -71,19 +70,23 @@ void gameTick() {
   //If the room has an update function, call it
   if(room.update) room.update();
     
-  //Draw SpriteObjects
-  for(int i = 0; i < NUM_OBJECTS; i++) {
-    SpriteObject obj = objects[i];
-    if(obj.sprite) drawSpriteObject(obj, room.palette);
+  //Draw & tick Entities
+  for(int i = 0; i < NUM_ENTITIES; i++) {
+    if(entities[i].id) {
+      if(EntityType(entities[i]).tick) EntityType(entities[i]).tick(&entities[i]);
+      if(entities[i].id) drawEntity(&entities[i]); //We check id again to make sure the entity wasn't removed while ticking
+    }
   }
-  drawSpriteObject(player, room.palette);
+  drawEntity(&player);
 
-  //Draw bottom info bar
+  //Draw health
   for(byte i = 0; i < data.health; i++) {
-    drawSprite(HEART, 4, 4, INFO_PALETTE, i*6 + 2, PIXELS_HEIGHT - 6);
+    drawSprite(HEART, 4, 4, UI_PALETTE, i*6 + 2, PIXELS_HEIGHT - 6);
   }
+
+  //If we have a key, draw it
   if(data.hasKey) {
-    drawSprite(KEY, 8, 4, INFO_PALETTE, PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6);
+    drawSprite(KEY, 8, 4, UI_PALETTE, PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6);
   } else {
     fillArea(PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6, 8, 4, BLACK);
   }
@@ -130,6 +133,7 @@ void drawTile(byte x, byte y) {
   drawSprite(sprite, 4, 4, room.palette, x*4, y*4);
 }
 
+//Set tile at position
 void setTile(byte x, byte y, byte tileID) {
   if(x % 2 == 0) {
     room.tiles[x/2 + y*15] = (tileID & 0xF) << 4;
@@ -149,6 +153,7 @@ Tile *getTile(byte x, byte y) {
   }
 }
 
+//Fill area with color
 void fillArea(byte x, byte y, byte width, byte height, byte color) {
   byte eX = x + width;
   byte eY = y + height;
@@ -159,7 +164,20 @@ void fillArea(byte x, byte y, byte width, byte height, byte color) {
   }
 }
 
-//Redraws background around spriteObject
-void clearSpriteObject(SpriteObject obj) {
-  fillArea(obj.x, obj.y, obj.width, obj.height, room.background);
+//Redraws background around entity
+void clearEntity(Entity* e) {
+  fillArea(e->x, e->y, EntityType(*e).width, EntityType(*e).height, room.background);
+}
+
+//Adds an entity to the first available slot and returns the slot it was added to. -1 if no space.
+int addEntity(Entity e) {
+  int slot = 0;
+  while(slot < NUM_ENTITIES) {
+    if(!entities[slot].id) {
+      entities[slot] = e;
+      return slot;
+    }
+    slot++;
+  }
+  return -1;
 }

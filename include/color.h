@@ -23,8 +23,13 @@
 #define DARKBLUE       0b01000000
 
 #define GOLD           0b00011100
+#define BROWN          0b00011000
+
 #define CYAN           0b11110000
 #define DARKCYAN       0b10100000
 #define DARKERCYAN     0b01010000
+
+#define PURPLE         0b11000100
+#define LIGHTPURPLE    0b11010100
 
 #endif
