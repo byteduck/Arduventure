@@ -10,18 +10,16 @@
 
 #include "Arduventure.h"
 #include "game.h"
-const char pad[500] PROGMEM = { 0 };
 
 //6-bit color (2 bits per R/G/B). This takes up almost all of the dynamic memory on
 //the Arduino Mega 2560 with a 120x60 framebuffer. In BGR format: 0bBBGGRR__
-byte displayBuffer[PIXELS_WIDTH * PIXELS_HEIGHT]; 
+byte displayBuffer[PIXELS_WIDTH * PIXELS_HEIGHT];
 
 int blankLinesLeft; //How many lines are left in the blanking interval
 byte line; //What line we're drawing in the framebuffer (NOT THE ACTUAL SCREEN LINE)
 byte sLine; //What subline we're on
 
 void setup() {
-  pad[0];
   //Setup pins
   pinMode(VSYNC_PIN, OUTPUT);
   pinMode(HSYNC_PIN, OUTPUT);
@@ -86,54 +84,13 @@ void setup() {
   initGame();
 }
 
-void scanLine(){
-  //If we're still in the vertical blanking interval, do nothing
-  if(blankLinesLeft) {
-    blankLinesLeft--;
-    return;
-  }
-
-  if(line < PIXELS_HEIGHT) {
-    /**
-     * Here, we write to the PORTA register directly. The last 3 bits on
-     * PORTA correspond to pins 27, 28, and 29, so by writing to it we
-     * can change the state of those pins all at the same time. This is
-     * also done with assembly to avoid C++ overhead, since we need to
-     * have this be as fast as possible. The below assembly code is approx.
-     * equal to this pseudocode:
-     * for(i = 0..PIXELS_WIDTH){
-     *   pixels = displayBuffer[line/8][i]
-     *   PORTA = pixels
-     * }
-     */
-    asm volatile(
-      ".rept 30                   \n\t" // Rept is just a macro that actually copies the below code x amount of times
-      "  nop                      \n\t" // Do nothing for 30 cycles to align the picture
-      ".endr                      \n\t" // End repeat
-      ".rept " STR(PIXELS_WIDTH) "\n\t" // Repeat the below code PIXELS_WIDTH times
-      "  ld r16, Z+               \n\t" // Load the byte in the current position in the display buffer to r16 and add one to the display buffer pointer
-      "  out %[port], r16         \n\t" // Write r16 to PORTA
-      ".endr                      \n\t" // End repeat
-      "nop                        \n\t" // Do nothing for one clock cycle to expand the last pixel
-      "ldi r16,0                  \n\t" // Load 0 into r16
-      "out %[port], r16           \n\t" // Write that to PORTA to turn off the pins
-      :
-      : [port] "I" (_SFR_IO_ADDR(PORTA)),                // This specifies that %[port] will correspond to PORTA
-        "z" "I" (displayBuffer + line * PIXELS_WIDTH)    // This specifies that the display buffer pointer at the current line will be stored in Z
-      : "r16", "r20", "memory"                           // This specifies r16 and r20 for use for storing "variables"
-    );
-    
-    if(++sLine == SUBLINES_PER_LINE - 1) {
-      sLine = -1;
-      line++;
-    }
-  }
-}
-
 void loop() {
   // Wait for interrupt. This way the CPU starts drawing the scanline at the same time every time
   sleep_mode();
-  scanLine();
+  if(line == PIXELS_HEIGHT) {
+    line++;
+    gameTick();
+  }
 }
 
 //Vertical sync interrupt. Called every time a new frame starts.
@@ -143,10 +100,49 @@ ISR (TIMER1_OVF_vect) {
   //Set line to 0 since we're back at the first line
   sLine = -1;
   line = 0;
-  gameTick();
 }
 
 //Horizontal sync interrupt. Called every time a new line starts.
 ISR (TIMER2_OVF_vect) {
+  //If we're still in the vertical blanking interval or past the screen area, do nothing.
+  //Can't add more if statements than this over here because the compiler gets really
+  //sensitive about relative conditional branching around long assembly code like below
+  if(blankLinesLeft || line >= PIXELS_HEIGHT) {
+    blankLinesLeft--;
+    return;
+  }
 
+  /**
+   * Here, we write to the PORTA register directly. The last 3 bits on
+   * PORTA correspond to pins 27, 28, and 29, so by writing to it we
+   * can change the state of those pins all at the same time. This is
+   * also done with assembly to avoid C++ overhead, since we need to
+   * have this be as fast as possible. The below assembly code is approx.
+   * equal to this pseudocode:
+   * for(i = 0..PIXELS_WIDTH){
+   *   pixels = displayBuffer[line/8][i]
+   *   PORTA = pixels
+   * }
+   */
+  asm volatile (
+    ".rept 32                   \n\t" // Rept is just a macro that actually copies the below code x amount of times
+    "  nop                      \n\t" // Do nothing for 30 cycles to align the picture
+    ".endr                      \n\t" // End repeat
+    ".rept " STR(PIXELS_WIDTH) "\n\t" // Repeat the below code PIXELS_WIDTH times
+    "  ld r16, Z+               \n\t" // Load the byte in the current position in the display buffer to r16 and add one to the display buffer pointer
+    "  out %[port], r16         \n\t" // Write r16 to PORTA
+    ".endr                      \n\t" // End repeat
+    "nop                        \n\t" // Do nothing for one clock cycle to expand the last pixel
+    "ldi r16,0                  \n\t" // Load 0 into r16
+    "out %[port], r16           \n\t" // Write that to PORTA to turn off the pins
+    :
+    : [port] "I" (_SFR_IO_ADDR(PORTA)),                // This specifies that %[port] will correspond to PORTA
+      "z" "I" (displayBuffer + line * PIXELS_WIDTH)    // This specifies that the display buffer pointer at the current line will be stored in Z
+    : "r16", "memory"                           // This specifies r16 for use
+  );
+  
+  if(++sLine == SUBLINES_PER_LINE - 1) {
+    sLine = -1;
+    line++;
+  }
 }

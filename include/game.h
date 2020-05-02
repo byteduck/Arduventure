@@ -24,6 +24,7 @@ struct Data {
 };
 extern Data data;
 
+extern bool game_loading;
 extern byte controller;
 extern SpriteObject player;
 extern SpriteObject objects[NUM_OBJECTS];

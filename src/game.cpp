@@ -22,11 +22,10 @@ void initGame() {
   loadRoom(&ROOM_START);
 }
 
-//Caled on vsync
+//Called after each frame is drawn.
 void gameTick() {
   //digitalRead pins 30-37 into controller
   controller = PINC;
-
   
   //Fill in spriteObjects with tiles behind them
   clearSpriteObject(player);
@@ -163,11 +162,4 @@ void fillArea(byte x, byte y, byte width, byte height, byte color) {
 //Redraws background around spriteObject
 void clearSpriteObject(SpriteObject obj) {
   fillArea(obj.x, obj.y, obj.width, obj.height, room.background);
-}
-
-/**
- * Object Methods
-*/
-void keyUpdate() {
-
 }

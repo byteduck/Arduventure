@@ -1,6 +1,7 @@
 #ifndef ARDUVENTURE_H
 #define ARDUVENTURE_H
 
+#include <Arduino.h>
 #include <avr/sleep.h>
 
 //Macro for converting define to string
