@@ -28,6 +28,7 @@ struct Room {
   void (*load)(void);
   void (*unload)(void);
   void (*update)(void);
+  boolean isCheckpoint;
 };
 
 extern const Room PROGMEM ROOM_2;
@@ -35,6 +36,8 @@ extern const Room PROGMEM ROOM_START;
 extern const Room PROGMEM ROOM_KEY1;
 extern const Room PROGMEM ROOM_DOOR1;
 extern const Room PROGMEM ROOM_SWORD;
+extern const Room PROGMEM ROOM_FIRST_GHOST;
 extern const Room PROGMEM ROOM_GHOSTS;
+extern const Room PROGMEM ROOM_END;
 
 #endif

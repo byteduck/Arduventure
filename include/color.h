@@ -24,6 +24,7 @@
 
 #define GOLD           0b00011100
 #define BROWN          0b00011000
+#define YELLOW         0b00111100
 
 #define CYAN           0b11110000
 #define DARKCYAN       0b10100000
@@ -31,5 +32,7 @@
 
 #define PURPLE         0b11000100
 #define LIGHTPURPLE    0b11010100
+
+#define MAGENTA        0b11001100
 
 #endif

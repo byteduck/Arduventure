@@ -7,12 +7,37 @@
 
 #define EntityType(entity) ENTITY_TYPES[(entity).id]
 
+//Types of data that can be stored in an entity's data byte
+union EntityData {
+	byte data;
+
+	struct PlayerData {
+		byte health : 3;
+		bool hasKey : 1;
+		bool gotKey1 : 1;
+		bool unlockedDoor1 : 1;
+		bool hasSword : 1;
+	} playerData;
+
+	struct GhostData {
+		byte shootTime;
+	} ghostData;
+
+	struct ProjectileData {
+		boolean PX : 1;
+		boolean NX : 1;
+		boolean PY : 1;
+		boolean NY : 1;
+	} projectileData;
+};
+static_assert(sizeof(EntityData) == 1, "Size of EntityData union exceeds one byte! (if this was intentional, change the static assert)");
+
 //A struct that holds a an ID, position, and arbitrary data.
 struct Entity {
   byte id; //0 == no entity
   byte  x;
   byte  y;
-  byte data;
+  EntityData data;
 };
 
 //A struct that holds information about a type of entity and a tick function
@@ -25,10 +50,6 @@ struct EntityType {
 };
 
 //Ghost stuff
-#define GHOST_PROJECTILE_DIRECTION_PX bit(0)
-#define GHOST_PROJECTILE_DIRECTION_NX bit(1)
-#define GHOST_PROJECTILE_DIRECTION_PY bit(2)
-#define GHOST_PROJECTILE_DIRECTION_NY bit(3)
 void tickGhost(Entity* ghost);
 void tickGhostProjectile(Entity* projectile);
 
@@ -82,6 +103,8 @@ const EntityType ENTITY_TYPES[] = {
 };
 
 boolean collides(Entity a, Entity b);
+boolean collidesWithTile(Entity entity);
+boolean withinBox(Entity a, int x, int y, int width, int height);
 
 //Shortcut to draw Entity
 inline void drawEntity(Entity* e) {

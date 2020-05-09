@@ -10,25 +10,25 @@ class Entity; //Forward declaration
 #include "room.h"
 
 #define INFOBAR_HEIGHT 8
-#define NUM_ENTITIES 4
+#define GAME_HEIGHT (PIXELS_HEIGHT - INFOBAR_HEIGHT)
+#define GAME_WIDTH PIXELS_WIDTH
+#define NUM_ENTITIES 8
 
 //These define which bit in the controller port reading is each button
-#define UP bit(0)
-#define DOWN bit(1)
-#define LEFT bit(2)
-#define RIGHT bit(3)
-
-struct Data {
-  byte health : 3;
-  bool hasKey : 1;
-  bool gotKey1 : 1;
-  bool unlockedDoor1 : 1;
-  bool hasSword : 1;
+union Controller {
+  byte portReading : 5;
+  struct Buttons {
+    boolean up : 1;
+    boolean down : 1;
+    boolean left : 1;
+    boolean right : 1;
+    boolean action : 1;
+    boolean pressedAction : 1; //Stores if action was pressed previous frame
+  } buttons;
 };
-extern Data data;
 
 extern bool game_loading;
-extern byte controller;
+extern Controller controller;
 extern Entity player;
 extern Entity entities[NUM_ENTITIES];
 extern Room room;

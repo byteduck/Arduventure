@@ -15,6 +15,11 @@ const Tile PROGMEM TILE_BLANK = {
   .passable = true
 };
 
+const Tile PROGMEM TILE_INVISIBLE_WALL = {
+  .sprite = {},
+  .passable = false
+};
+
 const Tile PROGMEM TILE_BLOCK = {
   .sprite = {
     0x33, 0x33,
@@ -150,6 +155,126 @@ const Tile PROGMEM TILE_LOCKEDGATE = {
     0x01, 0x01,
     0x10, 0x10,
     0x01, 0x01
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_1 = {
+  .sprite = {
+    0x22, 0x22,
+    0x00, 0x20,
+    0x00, 0x20,
+    0x00, 0x20
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_2 = {
+  .sprite = {
+    0x00, 0x20,
+    0x00, 0x00,
+    0x03, 0x33,
+    0x03, 0x00
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_3 = {
+  .sprite = {
+    0x03, 0x33,
+    0x03, 0x00,
+    0x03, 0x33,
+    0x00, 0x00
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_4 = {
+  .sprite = {
+    0x20, 0x40,
+    0x00, 0x40,
+    0x00, 0x44,
+    0x00, 0x40
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_5 = {
+  .sprite = {
+    0x00, 0x40,
+    0x00, 0x00,
+    0x30, 0x50,
+    0x00, 0x55
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_6 = {
+  .sprite = {
+    0x00, 0x50,
+    0x00, 0x50,
+    0x30, 0x50,
+    0x00, 0x00
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_7 = {
+  .sprite = {
+    0x04, 0x06,
+    0x04, 0x06,
+    0x44, 0x06,
+    0x04, 0x06
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_8 = {
+  .sprite = {
+    0x04, 0x06,
+    0x00, 0x00,
+    0x05, 0x07,
+    0x05, 0x07
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_9 = {
+  .sprite = {
+    0x55, 0x07,
+    0x05, 0x07,
+    0x05, 0x07,
+    0x00, 0x00
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_10 = {
+  .sprite = {
+    0x66, 0x60,
+    0x00, 0x00,
+    0x66, 0x00,
+    0x00, 0x00
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_11 = {
+  .sprite = {
+    0x66, 0x60,
+    0x00, 0x00,
+    0x77, 0x00,
+    0x00, 0x70
+  },
+  .passable = false
+};
+
+const Tile PROGMEM TILE_END_12 = {
+  .sprite = {
+    0x00, 0x70,
+    0x00, 0x70,
+    0x77, 0x70,
+    0x00, 0x00
   },
   .passable = false
 };

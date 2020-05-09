@@ -1,20 +1,23 @@
 #include "game.h"
 
-byte controller;
+Controller controller;
 Entity player = {
   .id = ENTITY_PLAYER,
   .x = 58,
-  .y = 28
+  .y = 28,
+  .data = {.playerData = {
+    .health = 4,
+    .hasKey = false,
+    .gotKey1 = false,
+    .unlockedDoor1 = false,
+    .hasSword = false,
+  }}
 };
 Entity entities[NUM_ENTITIES];
 Room room;
-Data data = {
-  .health = 4,
-  .hasKey = false,
-  .gotKey1 = false,
-  .unlockedDoor1 = false,
-  .hasSword = false,
-};
+
+const Room* checkpointRoom = &ROOM_START;
+Entity checkpointPlayer = player;
 
 //Called in setup()
 void initGame() {
@@ -24,7 +27,7 @@ void initGame() {
 //Called after each frame is drawn.
 void gameTick() {
   //digitalRead pins 30-37 into controller
-  controller = PINC;
+  controller.portReading = PINC;
   
   //Fill in Entities with background behind them
   clearEntity(&player);
@@ -34,34 +37,42 @@ void gameTick() {
   }
 
   //Move player according to input
-  if(controller & UP){
+  if(controller.buttons.up){
     if(player.y == 0) {
-      loadRoom(room.roomUp);
-      player.y = PIXELS_HEIGHT - INFOBAR_HEIGHT - 4;
+      if(room.roomUp){
+        player.y = GAME_HEIGHT - 4;
+        loadRoom(room.roomUp);
+      }
     } else if(getTile(player.x / 4, (player.y - 1) / 4)->passable && getTile((player.x + 3) / 4, (player.y - 1) / 4)->passable) {
       player.y--;
     }
   }
-  if(controller & DOWN) {
-    if(player.y == PIXELS_HEIGHT - INFOBAR_HEIGHT - 4) {
-      loadRoom(room.roomDown);
-      player.y = 0;
+  if(controller.buttons.down) {
+    if(player.y == GAME_HEIGHT - 4) {
+      if(room.roomDown){
+        player.y = 0;
+        loadRoom(room.roomDown);
+      }
     } else if(getTile(player.x / 4, (player.y + 4) / 4)->passable && getTile((player.x + 3) / 4, (player.y + 4) / 4)->passable) {
       player.y++;
     } 
   }
-  if(controller & RIGHT) {
-    if(player.x == PIXELS_WIDTH - 4) {
-      loadRoom(room.roomRight);
-      player.x = 0;
+  if(controller.buttons.right) {
+    if(player.x == GAME_WIDTH - 4) {
+      if(room.roomRight){
+        player.x = 0;
+        loadRoom(room.roomRight);
+      }
     } else if(getTile((player.x + 4) / 4, player.y / 4)->passable && getTile((player.x + 4) / 4, (player.y + 3) / 4)->passable) {
       player.x++;
     }
   }
-  if(controller & LEFT) {
+  if(controller.buttons.left) {
     if(player.x == 0) {
-      loadRoom(room.roomLeft);
-      player.x = PIXELS_WIDTH - 4;
+      if(room.roomLeft){
+        player.x = GAME_WIDTH - 4; 
+        loadRoom(room.roomLeft);
+      }
     } else if(getTile((player.x - 1) / 4, player.y / 4)->passable && getTile((player.x - 1) / 4, (player.y + 3) / 4)->passable) {
       player.x--;
     } 
@@ -69,6 +80,23 @@ void gameTick() {
 
   //If the room has an update function, call it
   if(room.update) room.update();
+
+  //If pressing the action button for the first time this frame, attack
+  fillArea(PIXELS_WIDTH / 2 - 4, PIXELS_HEIGHT - 6, 8, 4, BLACK);
+  if(controller.buttons.action && player.data.playerData.hasSword) {
+    drawSprite(SWORD, 8, 4, UI_PALETTE, PIXELS_WIDTH / 2 - 4, PIXELS_HEIGHT - 6);
+    if(!controller.buttons.pressedAction) {
+      for(byte i = 0; i < NUM_ENTITIES; i++) {
+        Entity* e = &entities[i];
+        if(e->id == ENTITY_GHOST)  {
+          if(withinBox(*e, player.x - 1, player.y - 1, 6, 6)) {
+            e->id = 0;
+          }
+        }
+      }
+    }
+  }
+  controller.buttons.pressedAction = controller.buttons.action;
     
   //Draw & tick Entities
   for(int i = 0; i < NUM_ENTITIES; i++) {
@@ -77,37 +105,58 @@ void gameTick() {
       if(entities[i].id) drawEntity(&entities[i]); //We check id again to make sure the entity wasn't removed while ticking
     }
   }
+
+  //If we died, load from checkpoint
+  if(player.data.playerData.health == 0) {
+    player = checkpointPlayer;
+    player.data.playerData.health = 4;
+    loadRoom(checkpointRoom);
+  }
+
+  //Draw player
   drawEntity(&player);
 
   //Draw health
-  for(byte i = 0; i < data.health; i++) {
+  fillArea(2, PIXELS_HEIGHT - 6, 24, 4, BLACK);
+  for(byte i = 0; i < player.data.playerData.health; i++) {
     drawSprite(HEART, 4, 4, UI_PALETTE, i*6 + 2, PIXELS_HEIGHT - 6);
   }
 
   //If we have a key, draw it
-  if(data.hasKey) {
-    drawSprite(KEY, 8, 4, UI_PALETTE, PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6);
+  if(player.data.playerData.hasKey) {
+    drawSprite(KEY, 8, 4, UI_PALETTE, GAME_WIDTH - 10, PIXELS_HEIGHT - 6);
   } else {
-    fillArea(PIXELS_WIDTH - 10, PIXELS_HEIGHT - 6, 8, 4, BLACK);
+    fillArea(GAME_WIDTH - 10, PIXELS_HEIGHT - 6, 8, 4, BLACK);
   }
 }
 
 void loadRoom(const Room *roomToLoad) {
-  //If the current room has an uload function, call it
+  //If the current room has an unload function, call it
   if(room.unload) room.unload();
+
+  //Remove all of the entities
+  for(int i = 0; i < NUM_ENTITIES; i++) {
+    entities[i].id = ENTITY_NONE;
+  }
 
   memcpy_P(&room, roomToLoad, sizeof(Room)); //Load Room from progmem
 
+  //If the new room is a checkpoint, save
+  if(room.isCheckpoint) {
+    checkpointRoom = roomToLoad;
+    checkpointPlayer = player;
+  }
+
   //Set background
-  memset(displayBuffer, room.background, PIXELS_WIDTH * (PIXELS_HEIGHT - INFOBAR_HEIGHT));
+  memset(displayBuffer, room.background, GAME_WIDTH * GAME_HEIGHT);
 
   //Draw outline around info bar
-  for(byte y = PIXELS_HEIGHT - INFOBAR_HEIGHT; y < PIXELS_HEIGHT; y++) {
-    if(y == PIXELS_HEIGHT - INFOBAR_HEIGHT || y == PIXELS_HEIGHT - 1) {
-      memset(displayBuffer + y * PIXELS_WIDTH, room.infoOutline, PIXELS_WIDTH);
+  for(byte y = GAME_HEIGHT; y < PIXELS_HEIGHT; y++) {
+    if(y == GAME_HEIGHT || y == PIXELS_HEIGHT - 1) {
+      memset(displayBuffer + y * GAME_WIDTH, room.infoOutline, GAME_WIDTH);
     } else {
       setPixel(0, y, room.infoOutline);
-      setPixel(PIXELS_WIDTH - 1, y, room.infoOutline);
+      setPixel(GAME_WIDTH - 1, y, room.infoOutline);
     }
   }
 
@@ -159,7 +208,7 @@ void fillArea(byte x, byte y, byte width, byte height, byte color) {
   byte eY = y + height;
   for(int cX = x; cX < eX; cX++) {
     for(int cY = y; cY < eY; cY++) {
-      displayBuffer[cX + cY*PIXELS_WIDTH] = color;
+      displayBuffer[cX + cY*GAME_WIDTH] = color;
     }
   }
 }
